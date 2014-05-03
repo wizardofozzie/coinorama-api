@@ -1,0 +1,78 @@
+
+This repository regroups demos and sample apps using Coinorama.net public HTTP API.
+
+
+* Markets Ticker
+  URL : http://coinorama.net/api/markets
+
+  Returns a JSON object where "ticks" holds the data of available exchanges.
+  For each exchange, an object holds the exchange name and the tick data.
+  A tick is an array which holds the following items :
+
+  index	name	                             unit
+   0	  price of the latest trade          currency/BTC
+   1	  trading volume (past+current day)	 Bitcoins
+   2	  direction	                         0 for down, 1 for stable, 2 for up
+   3	  currency to USD conversion rate	   n/a
+
+
+* Bitcoin Network Info
+  URL : http://coinorama.net/api/network
+
+  Returns a JSON object where "ticks" holds the data of available crypto-currencies (currently Bitcoin only).
+  For each crypto-currency, an object holds the crypto-currency name and the tick data.
+  A tick is an array which holds the following items :
+
+  index	name                         unit
+   0    last block ID                n/a
+   1    last block timestamp         UNIX timestamp UTC
+   2    current period difficulty    n/a
+   3    current period length	       seconds
+   4    current period nb. blocks	   n/a
+   5    previous period difficulty	 n/a
+   6    previous period length	     seconds
+   7    previous period nb. blocks	 n/a
+
+
+* Bitcoin Blockchain
+  URL : http://coinorama.net/api/blockchain
+
+  Returns a JSON object where "data" holds an object describing the item requested in the query string.
+  If no item requested, the returned object describes the most recent block.
+  You may query a block ID, a public address or a transaction ID, for example api/blockchain?15At8pPhcoQySMmytGiANYLxFzr3vcKFRF
+
+  o Block ID
+    A block ID returns an object named "b" which holds the following items :
+
+     name	description	                  unit
+      i	  ID                            n/a
+      h	  hash	                        n/a
+      p	  hash of the previous block	  n/a
+      r	  merkle root	                  n/a
+      d	  difficulty	                  n/a
+      n	  nonce	                        n/a
+      s	  size	                        Bytes
+      z	  number of transactions	      n/a
+      t	  timestamp	                    UNIX timestamp UTC
+
+  o Public Address
+    A public address returns an object named "a" which holds the following items :
+
+    name description	           unit
+     i	 public key	             n/a
+     r	 received amount	       Bitcoins
+     s	 sent amount	           Bitcoins
+     n	 number of transactions	 n/a
+
+
+  o Transaction ID
+    A transaction ID returns an object named "x" which holds the following items :
+
+    name	description	            unit
+     h    transaction ID	        n/a
+     b	  confirmation block ID	  Bitcoins
+     s	  size	                  Bytes
+     f	  fees                    Bitcoins
+     t	  confirmation timestamp	UNIX timestamp UTC
+     i 	  array of inputs	        {"a":address, "m":amount}
+     o	  array of outputs	      {"a":address, "m":amount}
