@@ -102,7 +102,10 @@ def printMarkets ( data ):
     for t in data['ticks']:
         stdout.write ( ' ' + t['name'] )
         stdout.write ( ': %s' % MKT_DIRECTION_CHAR [ t['tick'][MKT_DIRECTION] ] )
-        stdout.write ( ' %.2f %s' % (t['tick'][MKT_RATE], MKT_EXCH_CURRENCY[t['name']]) )
+        try:
+            stdout.write ( ' %.2f %s' % (t['tick'][MKT_RATE], MKT_EXCH_CURRENCY[t['name']]) )
+        except KeyError as e:
+            stdout.write ( ' %.2f %s' % (t['tick'][MKT_RATE], '???') )
         stdout.write ( ' ; %.1f BTCs traded' % t['tick'][MKT_VOLUME] )
         stdout.write ( '\n' )
 
