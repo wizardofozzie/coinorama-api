@@ -75,13 +75,19 @@ MKT_USD_CONV = 3   # exchange currency to USD conversion rate
 MKT_EXCH_CURRENCY = { "bstamp":"USD",
                       "btce":"USD",
                       "bfinex":"USD",
+                      "itbitUSD":"USD",
                       "krakenUSD":"USD",
                       "anxUSD":"USD",
                       "bchina":"CNY",
                       "huobi":"CNY",
                       "anxHKD":"HKD",
                       "krakenEUR":"EUR",
-                      "bcentral":"EUR" }
+                      "itbitEUR":"EUR",
+                      "bcentral":"EUR",
+                      "bitcurexPLN":"PLN",
+                      "bitmarketPLN":"PLN",
+                      "bitbayPLN":"PLN",
+                      "mercadoBRL":"BRL" };
 
 def getAvgRate ( markets ):
     total_volume = 0.0
