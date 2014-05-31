@@ -77,6 +77,7 @@ MKT_EXCH_CURRENCY = { "bstamp":"USD",
                       "bfinex":"USD",
                       "itbitUSD":"USD",
                       "krakenUSD":"USD",
+                      "hitbtcUSD":"USD",
                       "anxUSD":"USD",
                       "bchina":"CNY",
                       "huobi":"CNY",
@@ -84,10 +85,14 @@ MKT_EXCH_CURRENCY = { "bstamp":"USD",
                       "krakenEUR":"EUR",
                       "itbitEUR":"EUR",
                       "bcentral":"EUR",
+                      "hitbtcEUR":"EUR",
                       "bitcurexPLN":"PLN",
                       "bitmarketPLN":"PLN",
                       "bitbayPLN":"PLN",
-                      "mercadoBRL":"BRL" };
+                      "mercadoBRL":"BRL",
+                      "vaultosaCAD":"CAD",
+                      "cavirtexCAD":"CAD",
+                      "bit2cILS":"ILS" };
 
 def getAvgRate ( markets ):
     total_volume = 0.0
