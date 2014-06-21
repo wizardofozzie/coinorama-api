@@ -5,7 +5,7 @@
 # This file is distributed as part of Coinorama
 # Copyright (c) 2013-2014 Nicolas BENOIT
 #
-# version 0.4.2 ; 2014-06-01
+# version 0.4.3 ; 2014-06-21
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -21,7 +21,7 @@ from sys import stdout, stderr
 
 
 def get_version ( ):
-    return '0.4.1'
+    return '0.4.3'
 
 
 def fetchData ( server, markets, network, blockchain ):
@@ -50,18 +50,20 @@ def fetchData ( server, markets, network, blockchain ):
         return None
 
     # blockchain
-    connection.request ( 'GET', blockchain )
-    r = connection.getresponse ( )
-    if ( r.status == 200 ):
-        blockchainData = r.read ( )
-    else:
-        stderr.write ( 'error: fetchData() got status %d for blockchain\n' % r.status )
-        return None
+    # disabled following storage problem
+    #connection.request ( 'GET', blockchain )
+    #r = connection.getresponse ( )
+    #if ( r.status == 200 ):
+    #    blockchainData = r.read ( )
+    #else:
+    #    stderr.write ( 'error: fetchData() got status %d for blockchain\n' % r.status )
+    #    return None
 
     connection.close ( )
 
     # parse JSON
-    return ( json.loads(marketsData), json.loads(networkData), json.loads(blockchainData) )
+    #return ( json.loads(marketsData), json.loads(networkData), json.loads(blockchainData) )
+    return ( json.loads(marketsData), json.loads(networkData), '' )
 
 
 
@@ -190,5 +192,6 @@ if __name__ == "__main__":
         printNetwork ( nwk_data )
         print ( '\nMarket Cap:' )
         printMarketCap ( mkt_data, nwk_data['ticks'][0]['tick'][NWK_BLOCK_ID] )
-        print ( '\nBlockchain:' )
-        printBlock ( bc_data['data']['b'] )
+        #print ( '\nBlockchain:' )
+        #printBlock ( bc_data['data']['b'] )
+        print ( '' )
