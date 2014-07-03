@@ -5,7 +5,7 @@
 # This file is distributed as part of Coinorama
 # Copyright (c) 2013-2014 Nicolas BENOIT
 #
-# version 0.4.3 ; 2014-06-21
+# version 0.4.4 ; 2014-07-03
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -21,7 +21,7 @@ from sys import stdout, stderr
 
 
 def get_version ( ):
-    return '0.4.3'
+    return '0.4.4'
 
 
 def fetchData ( server, markets, network, blockchain ):
