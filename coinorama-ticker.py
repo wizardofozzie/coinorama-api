@@ -5,7 +5,7 @@
 # This file is distributed as part of Coinorama
 # Copyright (c) 2013-2014 Nicolas BENOIT
 #
-# version 0.4.4 ; 2014-07-03
+# version 0.5.0 ; 2014-07-06
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -21,7 +21,7 @@ from sys import stdout, stderr
 
 
 def get_version ( ):
-    return '0.4.4'
+    return '0.5.0'
 
 
 def fetchData ( server, markets, network, blockchain ):
@@ -68,61 +68,49 @@ def fetchData ( server, markets, network, blockchain ):
 
 
 # markets
-MKT_RATE = 0       # BTC rate against exchange currency
+MKT_PRICE = 0      # BTC price in exchange currency
 MKT_VOLUME = 1     # trading volume (past+current day)
-MKT_DIRECTION = 2  # rate direction (0:down, 1:stable, 2:up)
+MKT_DIRECTION = 2  # price direction (0:down, 1:stable, 2:up)
 MKT_DIRECTION_CHAR = [ u'\u2193', u'\u2192', u'\u2191' ] # down, stable, up
-MKT_USD_CONV = 3   # exchange currency to USD conversion rate
+MKT_USD_CONV = 3   # exchange currency to USD conversion factor
 
-MKT_EXCH_CURRENCY = { "bstamp":"USD",
-                      "bitstampUSD":"USD",
-                      "btce":"USD",
-                      "btceUSD":"USD",
-                      "bfinex":"USD",
-                      "bitfinexUSD":"USD",
-                      "itbitUSD":"USD",
-                      "krakenUSD":"USD",
-                      "hitbtcUSD":"USD",
-                      "anxUSD":"USD",
-                      "lakebtcUSD":"USD",
-                      "bchina":"CNY",
-                      "btcchinaCNY":"CNY",
-                      "huobi":"CNY",
-                      "huobiCNY":"CNY",
-                      "okcoinCNY":"CNY",
-                      "anxHKD":"HKD",
-                      "krakenEUR":"EUR",
-                      "itbitEUR":"EUR",
-                      "bcentral":"EUR",
-                      "paymiumEUR":"EUR",
-                      "hitbtcEUR":"EUR",
-                      "bitcurexPLN":"PLN",
-                      "bitmarketPLN":"PLN",
-                      "bitbayPLN":"PLN",
-                      "mercadoBRL":"BRL",
-                      "vaultosaCAD":"CAD",
-                      "cavirtexCAD":"CAD",
-                      "bit2cILS":"ILS" };
-
-def getAvgRate ( markets ):
+def getAvgPrice ( markets ):
     total_volume = 0.0
     mkt_sum = 0.0
     # weighted USD average of all available exchanges
     for t in markets['ticks']:
-        mkt_sum += (t['tick'][MKT_RATE] * t['tick'][MKT_USD_CONV]) * t['tick'][MKT_VOLUME]
+        mkt_sum += (t['tick'][MKT_PRICE] * t['tick'][MKT_USD_CONV]) * t['tick'][MKT_VOLUME]
         total_volume += t['tick'][MKT_VOLUME]
     return (mkt_sum / total_volume)
 
+class exchange:
+    def __init__ ( self, name, tick ):
+        self.name = name[0:len(name)-3]
+        self.price = tick[MKT_PRICE]
+        self.volume = tick[MKT_VOLUME]
+        self.direction = tick[MKT_DIRECTION]
+        self.usd_conv = tick[MKT_USD_CONV]
+        self.currency = name[len(name)-3:]
+
+    def __unicode__ ( self ):
+        return u'%s: %s %.2f %s ; %.1f BTCs traded' % ( self.name, MKT_DIRECTION_CHAR[self.direction],
+                                                        self.price, self.currency, self.volume )
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
 def printMarkets ( data ):
+    markets = { }
     for t in data['ticks']:
-        stdout.write ( ' ' + t['name'] )
-        stdout.write ( ': %s' % MKT_DIRECTION_CHAR [ t['tick'][MKT_DIRECTION] ] )
-        try:
-            stdout.write ( ' %.2f %s' % (t['tick'][MKT_RATE], MKT_EXCH_CURRENCY[t['name']]) )
-        except KeyError as e:
-            stdout.write ( ' %.2f %s' % (t['tick'][MKT_RATE], '???') )
-        stdout.write ( ' ; %.1f BTCs traded' % t['tick'][MKT_VOLUME] )
-        stdout.write ( '\n' )
+        e = exchange ( t['name'], t['tick'] )
+        if e.currency not in markets:
+            markets[e.currency] = [ ]
+        markets[e.currency].append ( e )
+    for c in markets:
+        print ( ' %s' % c )
+        for e in markets[c]:
+            print ( '  %s' % e )
+    return
+
 
 
 # network
@@ -137,16 +125,23 @@ NWK_PAST_NB = 7          # number of blocks in previous period
 
 def printNetwork ( data ):
     t = data['ticks'][0]['tick'] # for now, only one crypto-currency available : Bitcoin
-    stdout.write ( ' Block: %d' % t[NWK_BLOCK_ID] )
-    stdout.write ( ' ; %s UTC\n' % datetime.utcfromtimestamp(t[NWK_BLOCK_TSTAMP]) )
-    stdout.write ( ' Difficulty: %s\n' % t[NWK_CURRENT_DIFF] )
+    print ( ' Block: %d ; %s UTC' % (t[NWK_BLOCK_ID],datetime.utcfromtimestamp(t[NWK_BLOCK_TSTAMP])) )
+    print ( ' Difficulty: %s' % t[NWK_CURRENT_DIFF] )
 
+    # hashrate
     hashrate = t[NWK_CURRENT_DIFF] * 7.158278826666667 # target hashrate
     hash_past = (t[NWK_PAST_DIFF] * 7.158278826666667) * (t[NWK_PAST_NB] / (t[NWK_PAST_PERIOD] / 600))
     hash_recent = hashrate * (t[NWK_CURRENT_NB] / (t[NWK_CURRENT_PERIOD] / 600))
     hash_wavg = ((hash_past*3)+hash_recent) / 4 # weighted hashrate, may be improved by considering periods length
-    stdout.write ( ' Hashrate: %.1f Phash/sec' % (hash_wavg/1000000000) ) # MegaHash/sec converted to PetaHash/sec
-    stdout.write ( '\n' )
+    print ( ' Hashrate: %.1f Phash/sec' % (hash_wavg/1000000000) ) # MegaHash/sec converted to PetaHash/sec
+
+    # mining pools
+    pools = [ (data['ticks'][0]['pools'][p],p) for p in data['ticks'][0]['pools'] ]
+    pools_sum = sum ( [ t[0] for t in pools ] )
+    pools.sort ( reverse=True )
+    print ( ' Top 5 Mining Pools:' )
+    for i in range ( 5 ):
+        print ( '  %s %.1f%%' % (pools[i][1],pools[i][0]*100.0/pools_sum) )
     return
 
 
@@ -164,25 +159,23 @@ def getNbCoinsMined ( block_id ):
 
 def printMarketCap ( markets, block_id ):
     nbcoins = getNbCoinsMined ( block_id )
-    avg = getAvgRate(markets)
-    stdout.write ( ' Nb. Coins: %d BTCs\n' % getNbCoinsMined(block_id) )
-    stdout.write ( ' Average Rate: %.2f USD/BTC\n' % avg )
-    stdout.write ( ' Market Cap: %.2f Billions USD' % ((nbcoins*avg)/1000000000) )
-    stdout.write ( '\n' )
+    avg = getAvgPrice(markets)
+    print ( ' Nb. Coins: %d BTCs' % getNbCoinsMined(block_id) )
+    print ( ' Average Price: %.2f USD/BTC' % avg )
+    print ( ' Market Cap: %.2f Billions USD' % ((nbcoins*avg)/1000000000) )
     return
 
 
 # blockchain
 def printBlock ( block ):
-    stdout.write ( ' Block: %d\n' % block['i'] )
-    stdout.write ( ' Hash: %s\n' % block['h'] )
-    stdout.write ( ' Previous Hash: %s\n' % block['p'] )
-    stdout.write ( ' Merkle Tree: %s\n' % block['r'] )
-    stdout.write ( ' Difficulty: %s\n' % block['d'] )
-    stdout.write ( ' Nonce: %d\n' % block['n'] )
-    stdout.write ( ' Size: %.2f Kbytes\n' % (float(block['s'])/1024) )
-    stdout.write ( ' Nb. TXs: %d\n' % block['z'] )
-    stdout.write ( '\n' )
+    print ( ' Block: %d' % block['i'] )
+    print ( ' Hash: %s' % block['h'] )
+    print ( ' Previous Hash: %s' % block['p'] )
+    print ( ' Merkle Tree: %s' % block['r'] )
+    print ( ' Difficulty: %s' % block['d'] )
+    print ( ' Nonce: %d' % block['n'] )
+    print ( ' Size: %.2f Kbytes' % (float(block['s'])/1024) )
+    print ( ' Nb. TXs: %d' % block['z'] )
     return
 
 
