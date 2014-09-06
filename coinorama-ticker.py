@@ -5,7 +5,7 @@
 # This file is distributed as part of Coinorama
 # Copyright (c) 2013-2014 Nicolas BENOIT
 #
-# version 0.5.0 ; 2014-07-06
+# version 0.6.0 ; 2014-09-06
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -21,7 +21,7 @@ from sys import stdout, stderr
 
 
 def get_version ( ):
-    return '0.5.0'
+    return '0.6.0'
 
 
 def fetchData ( server, markets, network, blockchain ):
@@ -68,44 +68,52 @@ def fetchData ( server, markets, network, blockchain ):
 
 
 # markets
-MKT_PRICE = 0      # BTC price in exchange currency
-MKT_VOLUME = 1     # trading volume (past+current day)
-MKT_DIRECTION = 2  # price direction (0:down, 1:stable, 2:up)
 MKT_DIRECTION_CHAR = [ u'\u2193', u'\u2192', u'\u2191' ] # down, stable, up
-MKT_USD_CONV = 3   # exchange currency to USD conversion factor
 
 def getAvgPrice ( markets ):
     total_volume = 0.0
     mkt_sum = 0.0
     # weighted USD average of all available exchanges
-    for t in markets['ticks']:
-        mkt_sum += (t['tick'][MKT_PRICE] * t['tick'][MKT_USD_CONV]) * t['tick'][MKT_VOLUME]
-        total_volume += t['tick'][MKT_VOLUME]
+    for e in markets['ticks']:
+        t = markets['ticks'][e]
+        mkt_sum += (t['last'] * t['rusd']) * t['volume']
+        total_volume += t['volume']
     return (mkt_sum / total_volume)
+
+def getPriceDirection ( avg, last ):
+    if ( abs(avg-last) <= 0.01 ):
+        return 1
+    elif ( avg > last ):
+        return 0
+    return 2
 
 class exchange:
     def __init__ ( self, name, tick ):
         self.name = name[0:len(name)-3]
-        self.price = tick[MKT_PRICE]
-        self.volume = tick[MKT_VOLUME]
-        self.direction = tick[MKT_DIRECTION]
-        self.usd_conv = tick[MKT_USD_CONV]
+        self.price = tick['last']
+        self.volume = tick['volume']
+        self.direction = getPriceDirection ( tick['avg'], tick['last'] )
+        self.usd_conv = tick['rusd']
         self.currency = name[len(name)-3:]
 
     def __unicode__ ( self ):
-        return u'%s: %s %.2f %s ; %.1f BTCs traded' % ( self.name, MKT_DIRECTION_CHAR[self.direction],
-                                                        self.price, self.currency, self.volume )
+        return u'%s: %s %.2f %s ; %.1f BTCs traded the past 24 hours' % ( self.name, MKT_DIRECTION_CHAR[self.direction],
+                                                                          self.price, self.currency, self.volume )
     def __str__(self):
         return unicode(self).encode('utf-8')
+
+    def __cmp__ ( self, other ):
+        return (self.volume - other.volume)
 
 def printMarkets ( data ):
     markets = { }
     for t in data['ticks']:
-        e = exchange ( t['name'], t['tick'] )
+        e = exchange ( t, data['ticks'][t] )
         if e.currency not in markets:
             markets[e.currency] = [ ]
         markets[e.currency].append ( e )
     for c in markets:
+        markets[c].sort ( reverse=True )
         print ( ' %s' % c )
         for e in markets[c]:
             print ( '  %s' % e )

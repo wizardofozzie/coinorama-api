@@ -6,14 +6,16 @@ This repository regroups demos and sample apps using Coinorama.net public HTTP A
   URL : http://coinorama.net/api/markets
 
   Returns a JSON object where "ticks" holds the data of available exchanges.
-  For each exchange, an object holds the exchange name and the tick data.
-  A tick is an array which holds the following items :
+  Each exchange is represented by a key whose value holds a tick object.
+  A tick object has the following properties :
 
-  index	name	                             unit
-   0	  price of the latest trade          currency/BTC
-   1	  trading volume (past+current day)	 Bitcoins
-   2	  direction	                         0 for down, 1 for stable, 2 for up
-   3	  currency to USD conversion rate	   n/a
+  'last' : price of the latest trade (currency/BTC)
+  'open' : price of the first trade of the past 24h (currency/BTC)
+  'avg' : average price during the past 24h (currency/BTC)
+  'bid' : order book highest bid price (currency/BTC)
+  'ask' : order book lowest ask price (currency/BTC)
+  'volume' : trading volume (past 24h) (Bitcoins)
+  'rusd' : currency to USD conversion rate
 
 
 * Bitcoin Network Info
