@@ -3,9 +3,9 @@
 # Coinorama ticker API demo, markets and network info
 #
 # This file is distributed as part of Coinorama
-# Copyright (c) 2013-2014 Nicolas BENOIT
+# Copyright (c) 2013-2015 Nicolas BENOIT
 #
-# version 0.6.0 ; 2014-09-06
+# version 0.6.1 ; 2015-01-12
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -21,7 +21,7 @@ from sys import stdout, stderr
 
 
 def get_version ( ):
-    return '0.6.0'
+    return '0.6.1'
 
 
 def fetchData ( server, markets, network, blockchain ):
@@ -122,26 +122,11 @@ def printMarkets ( data ):
 
 
 # network
-NWK_BLOCK_ID = 0         # most recent block ID
-NWK_BLOCK_TSTAMP = 1     # most recent block timestamp
-NWK_CURRENT_DIFF = 2     # current network difficulty
-NWK_CURRENT_PERIOD = 3   # current period length (seconds)
-NWK_CURRENT_NB = 4       # number of blocks in current period
-NWK_PAST_DIFF = 5        # difficulty of previous period
-NWK_PAST_PERIOD = 6      # length of previous period (seconds)
-NWK_PAST_NB = 7          # number of blocks in previous period
-
 def printNetwork ( data ):
     t = data['ticks'][0]['tick'] # for now, only one crypto-currency available : Bitcoin
-    print ( ' Block: %d ; %s UTC' % (t[NWK_BLOCK_ID],datetime.utcfromtimestamp(t[NWK_BLOCK_TSTAMP])) )
-    print ( ' Difficulty: %s' % t[NWK_CURRENT_DIFF] )
-
-    # hashrate
-    hashrate = t[NWK_CURRENT_DIFF] * 7.158278826666667 # target hashrate
-    hash_past = (t[NWK_PAST_DIFF] * 7.158278826666667) * (t[NWK_PAST_NB] / (t[NWK_PAST_PERIOD] / 600))
-    hash_recent = hashrate * (t[NWK_CURRENT_NB] / (t[NWK_CURRENT_PERIOD] / 600))
-    hash_wavg = ((hash_past*3)+hash_recent) / 4 # weighted hashrate, may be improved by considering periods length
-    print ( ' Hashrate: %.1f Phash/sec' % (hash_wavg/1000000000) ) # MegaHash/sec converted to PetaHash/sec
+    print ( ' Block: %d ; %s UTC' % (t['last'],datetime.utcfromtimestamp(t['time'])) )
+    print ( ' Difficulty: %s' % t['diff'] )
+    print ( ' Hashrate: %.1f Phash/sec' % (t['hrate']/1000000000) ) # MegaHash/sec converted to PetaHash/sec
 
     # mining pools
     pools = [ (data['ticks'][0]['pools'][p],p) for p in data['ticks'][0]['pools'] ]
@@ -200,7 +185,7 @@ if __name__ == "__main__":
         print ( '\nNetwork:' )
         printNetwork ( nwk_data )
         print ( '\nMarket Cap:' )
-        printMarketCap ( mkt_data, nwk_data['ticks'][0]['tick'][NWK_BLOCK_ID] )
+        printMarketCap ( mkt_data, nwk_data['ticks'][0]['tick']['last'] )
         #print ( '\nBlockchain:' )
         #printBlock ( bc_data['data']['b'] )
         print ( '' )
