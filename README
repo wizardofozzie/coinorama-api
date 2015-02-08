@@ -31,8 +31,3 @@ This repository regroups demos and sample apps using Coinorama.net public HTTP A
    'hrate' : hashrate estimate (MH/s)
    'pools' : mining pools array
 
-
-* Bitcoin Blockchain
-  URL : http://coinorama.net/api/blockchain
-
-  This endpoint is not maintained anymore.

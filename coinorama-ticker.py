@@ -5,7 +5,7 @@
 # This file is distributed as part of Coinorama
 # Copyright (c) 2013-2015 Nicolas BENOIT
 #
-# version 0.6.1 ; 2015-01-12
+# version 0.6.2 ; 2015-02-07
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -21,13 +21,12 @@ from sys import stdout, stderr
 
 
 def get_version ( ):
-    return '0.6.1'
+    return '0.6.2'
 
 
-def fetchData ( server, markets, network, blockchain ):
+def fetchData ( server, markets, network ):
     marketsData = None
     networkData = None
-    blockchainData = None
 
     connection = HTTPConnection ( server, timeout=5 )
 
@@ -49,20 +48,9 @@ def fetchData ( server, markets, network, blockchain ):
         stderr.write ( 'error: fetchData() got status %d for network\n' % r.status )
         return None
 
-    # blockchain
-    # disabled following storage problem
-    #connection.request ( 'GET', blockchain )
-    #r = connection.getresponse ( )
-    #if ( r.status == 200 ):
-    #    blockchainData = r.read ( )
-    #else:
-    #    stderr.write ( 'error: fetchData() got status %d for blockchain\n' % r.status )
-    #    return None
-
     connection.close ( )
 
     # parse JSON
-    #return ( json.loads(marketsData), json.loads(networkData), json.loads(blockchainData) )
     return ( json.loads(marketsData), json.loads(networkData), '' )
 
 
@@ -159,24 +147,11 @@ def printMarketCap ( markets, block_id ):
     return
 
 
-# blockchain
-def printBlock ( block ):
-    print ( ' Block: %d' % block['i'] )
-    print ( ' Hash: %s' % block['h'] )
-    print ( ' Previous Hash: %s' % block['p'] )
-    print ( ' Merkle Tree: %s' % block['r'] )
-    print ( ' Difficulty: %s' % block['d'] )
-    print ( ' Nonce: %d' % block['n'] )
-    print ( ' Size: %.2f Kbytes' % (float(block['s'])/1024) )
-    print ( ' Nb. TXs: %d' % block['z'] )
-    return
-
-
 #
 # main program
 #
 if __name__ == "__main__":
-    t = fetchData ( 'coinorama.net', '/api/markets', '/api/network', '/api/blockchain' )
+    t = fetchData ( 'coinorama.net', '/api/markets', '/api/network' )
     if ( t != None ):
         (mkt_data,nwk_data,bc_data) = t
         print ( '\nCoinorama.net Ticker API demo v%s' % get_version() )
@@ -186,6 +161,4 @@ if __name__ == "__main__":
         printNetwork ( nwk_data )
         print ( '\nMarket Cap:' )
         printMarketCap ( mkt_data, nwk_data['ticks'][0]['tick']['last'] )
-        #print ( '\nBlockchain:' )
-        #printBlock ( bc_data['data']['b'] )
         print ( '' )
